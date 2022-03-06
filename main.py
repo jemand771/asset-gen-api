@@ -9,10 +9,8 @@ OUTPUTS = loader.load_outputs()
 
 app = Flask(__name__)
 
-for generator in GENERATORS:
-    generator: GeneratorBase
 
-
+def make_handler(generator: GeneratorBase):
     def handle():
         params = dict(request.args)
         # select a suitable output formatter
@@ -44,7 +42,7 @@ for generator in GENERATORS:
                         p_name: params.get(f"{gen_param}-{p_name}")
                         for p_name in input_handler.params
                     }
-                    )
+                )
                 break
             else:
                 return "no"  # TODO proper errors
@@ -53,7 +51,12 @@ for generator in GENERATORS:
         return output_handler.make_response(generator_output)
 
     handle.__name__ = f"handle_{generator.output_type.name}_{generator.name}"
-    app.get(f"/{generator.output_type.name}/{generator.name}")(handle)
+    return handle
+
+
+for generator_ in GENERATORS:
+    app.get(f"/{generator_.output_type.name}/{generator_.name}")(make_handler(generator_))
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
