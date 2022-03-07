@@ -35,11 +35,12 @@ def make_handler(generator: GeneratorBase):
                     continue
                 if input_handler.type != gen_param_type:
                     continue
-                if not all(f"{gen_param}-{p}" in params for p in input_handler.params):
+                param_prefix = f"{gen_param}-{input_handler.name}"
+                if not all(f"{param_prefix}-{p}" in params for p in input_handler.params):
                     continue
                 collected_generator_inputs[gen_param] = input_handler.run(
                     **{
-                        p_name: params.get(f"{gen_param}-{p_name}")
+                        p_name: params.get(f"{param_prefix}-{p_name}")
                         for p_name in input_handler.params
                     }
                 )
