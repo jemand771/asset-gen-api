@@ -8,7 +8,7 @@ class MediaType(Enum):
 
 
 class AllHandlerBase:
-    allow_cache = False  # TODO enable and test me
+    allow_cache = True
 
     def __init__(self):
         if self.allow_cache:

@@ -3,6 +3,9 @@ from flask import Flask, request
 from util import loader
 from util.types import GeneratorBase, InputBase, OutputBase
 
+
+loader.patch_image_hashable()
+
 INPUTS = loader.load_inputs()
 GENERATORS = loader.load_generators()
 OUTPUTS = loader.load_outputs()

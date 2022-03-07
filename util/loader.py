@@ -33,3 +33,12 @@ def load_generators():
 
 def load_outputs():
     return load_classes(Path("outputs"), OutputBase)
+
+
+def patch_image_hashable():
+    from PIL.PngImagePlugin import PngImageFile
+
+    def __hash__(self):
+        import hashlib
+        return int(hashlib.md5(self.tobytes()).hexdigest(), 16)
+    PngImageFile.__hash__ = __hash__
