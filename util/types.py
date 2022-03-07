@@ -34,3 +34,7 @@ class OutputBase(AllHandlerBase):
     allow_cache = False
     name: str = None
     type: MediaType
+
+
+class ConfigurationError(KeyError):
+    pass
