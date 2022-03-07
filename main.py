@@ -37,7 +37,7 @@ def make_handler(generator: GeneratorBase):
                     continue
                 if not all(f"{gen_param}-{p}" in params for p in input_handler.params):
                     continue
-                collected_generator_inputs[gen_param] = input_handler.get_value(
+                collected_generator_inputs[gen_param] = input_handler.run(
                     **{
                         p_name: params.get(f"{gen_param}-{p_name}")
                         for p_name in input_handler.params
@@ -48,7 +48,7 @@ def make_handler(generator: GeneratorBase):
                 return "no"  # TODO proper errors
         # execute generator
         generator_output = generator.run(**collected_generator_inputs)
-        return output_handler.make_response(generator_output)
+        return output_handler.run(generator_output)
 
     handle.__name__ = f"handle_{generator.output_type.name}_{generator.name}"
     return handle

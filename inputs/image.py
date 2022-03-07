@@ -12,7 +12,7 @@ class UrlImageInput(ImageInput):
     name = "url"
     params = ("url", )
 
-    def get_value(self, url):
+    def run(self, url):
         r = requests.get(url, stream=True)
         img = Image.open(r.raw)
         return img

@@ -9,5 +9,5 @@ class RawTextInput(TextInput):
     name = "raw"
     params = ("text",)
 
-    def get_value(self, text):
+    def run(self, text):
         return text

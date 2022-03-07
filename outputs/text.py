@@ -6,5 +6,5 @@ class BodyOutput(OutputBase):
     name = "body"
     type = MediaType.text
 
-    def make_response(self, text):
+    def run(self, text):
         return text

@@ -10,7 +10,7 @@ class BodyImageOutput(OutputBase):
     name = "body"
     type = MediaType.image
 
-    def make_response(self, img):
+    def run(self, img):
         img_io = io.BytesIO()
         img.save(img_io, "PNG")
         img_io.seek(0)
