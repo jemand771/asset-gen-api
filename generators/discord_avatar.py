@@ -1,28 +1,18 @@
 import requests
-from PIL import Image
 
-from util.types import InputBase, MediaType
-from util.util import get_env
 from util.constants import DISCORD_API_URL, DISCORD_CDN_URL
+from util.types import GeneratorBase, MediaType
+from util.util import get_env
+
+from generators.image_from_url import ImageFromUrl
 
 
-class ImageInput(InputBase):
-    type = MediaType.image
-
-
-class UrlImageInput(ImageInput):
-    name = "url"
-    params = ("url",)
-
-    def run(self, url):
-        r = requests.get(url, stream=True)
-        img = Image.open(r.raw)
-        return img
-
-
-class DiscordImageInput(ImageInput):
+class DiscordAvatar(ImageFromUrl):
+    input_params = {
+        "id": MediaType.text
+    }
     name = "discord"
-    params = ("id",)
+    output_type = MediaType.image
 
     def __init__(self):
         super().__init__()
@@ -41,4 +31,4 @@ class DiscordImageInput(ImageInput):
         if avatar_hash.startswith("a_"):
             raise ValueError("animated avatars aren't currently supported")  # TODO pass exception on
         cdn_url = f"{DISCORD_CDN_URL}/avatars/{id}/{avatar_hash}.png?size=1024"
-        return UrlImageInput().run(cdn_url)
+        return super().run(cdn_url)

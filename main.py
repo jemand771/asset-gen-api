@@ -1,66 +1,97 @@
-from flask import Flask, request
+from flask import Flask, abort, request
 
 from util import loader
-from util.types import GeneratorBase, InputBase, OutputBase
-
+from util.types import GeneratorBase, OutputBase, MediaType
+from util.constants import PARAM_DELIMITER_GENERATOR_ARG, PARAM_DELIMITER_GENERATOR_GROUPS
 
 loader.patch_image_hashable()
 
-INPUTS = loader.load_inputs()
 GENERATORS = loader.load_generators()
 OUTPUTS = loader.load_outputs()
 
 app = Flask(__name__)
 
 
-def make_handler(generator: GeneratorBase):
-    def handle():
-        params = dict(request.args)
-        # select a suitable output formatter
-        wanted_output = params.get("output")
-        for output_candidate in OUTPUTS:
-            if output_candidate.name is None:
-                continue
-            if output_candidate.type != generator.output_type:
-                continue
-            if not wanted_output or output_candidate.name == wanted_output:
-                output_handler: OutputBase = output_candidate
-                break
+@app.get("/<media_type>")
+def handle_query(media_type):
+    # TODO handle type error
+    try:
+        output_type = MediaType[media_type]
+    except KeyError:
+        # return because PyCharm doesn't see/understand the exception
+        return abort(404, "unsupported media type")
+    params = dict(request.args)
+    # select a suitable output formatter
+    wanted_output = params.get("output")
+    for output_candidate in OUTPUTS:
+        if output_candidate.name is None:
+            continue
+        if output_candidate.type != output_type:
+            continue
+        if not wanted_output or output_candidate.name == wanted_output:
+            output_handler: OutputBase = output_candidate
+            break
+    else:
+        return "no output matched"  # TODO proper errors
+    # we got output_handler, now try to execute a generator
+    try:
+        params.pop("output")
+    except KeyError:
+        pass
+    output = find_execute_generator(params, output_type)
+    return output_handler.run(output)
+
+
+def find_execute_generator(params: dict, output_type):
+    arg_dict = {}
+    grouped_args = group_input_params_once(params)
+    generator_name, arg_names = get_generator_name_and_args(grouped_args)
+    generator = find_generator(generator_name, output_type)
+    if list(sorted(arg_names)) != list(sorted(generator.input_params)):
+        raise ValueError()  # TODO error missing param
+    for key in arg_names:
+        param_key = f"{generator_name}{PARAM_DELIMITER_GENERATOR_ARG}{key}"
+        value = grouped_args[param_key]
+        if isinstance(value, dict):
+            # TODO no, wrong
+            arg_dict[key] = find_execute_generator(value, generator.input_params[key])
         else:
-            return "no output matched"  # TODO proper errors
-        # TODO don't run input grabber yet? - validation vs. efficiency
-        # collect input parameters
-        collected_generator_inputs = {}
-        for gen_param, gen_param_type in generator.input_params.items():
-            for input_handler in INPUTS:
-                input_handler: InputBase
-                if input_handler.name is None:
-                    continue
-                if input_handler.type != gen_param_type:
-                    continue
-                param_prefix = f"{gen_param}-{input_handler.name}"
-                if not all(f"{param_prefix}-{p}" in params for p in input_handler.params):
-                    continue
-                collected_generator_inputs[gen_param] = input_handler.run(
-                    **{
-                        p_name: params.get(f"{param_prefix}-{p_name}")
-                        for p_name in input_handler.params
-                    }
-                )
-                break
-            else:
-                return "no"  # TODO proper errors
-        # execute generator
-        generator_output = generator.run(**collected_generator_inputs)
-        return output_handler.run(generator_output)
-
-    handle.__name__ = f"handle_{generator.output_type.name}_{generator.name}"
-    return handle
+            arg_dict[key] = value
+    # arg_dict is fully resolved into non-nested key-value pairs
+    return generator.run(**arg_dict)
 
 
-for generator_ in GENERATORS:
-    app.get(f"/{generator_.output_type.name}/{generator_.name}")(make_handler(generator_))
+def group_input_params_once(params):
+    grouped = {}
+    for key, value in params.items():
+        try:
+            new_key, right_side = key.split(PARAM_DELIMITER_GENERATOR_GROUPS, 1)
+            grouped.setdefault(new_key, {})
+            grouped[new_key][right_side] = value
+        except ValueError:
+            grouped[key] = value
+    return grouped
+
+
+def get_generator_name_and_args(grouped_args):
+    # TODO error when no - in name
+    generator_candidates, arg_names = zip(*[
+        full_name.split(PARAM_DELIMITER_GENERATOR_ARG, 1)
+        for full_name in grouped_args
+    ])
+    if len(list(set(generator_candidates))) != 1:
+        raise ValueError()  # TODO too many args
+    return generator_candidates[0], arg_names
+
+
+def find_generator(name, output_type):
+    for generator in GENERATORS:
+        generator: GeneratorBase
+        if generator.name == name and generator.output_type == output_type:
+            return generator
+    raise ValueError()  # TODO error generator not found
 
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
+

@@ -24,12 +24,6 @@ class GeneratorBase(AllHandlerBase):
     output_type: MediaType
 
 
-class InputBase(AllHandlerBase):
-    name: str = None
-    params: dict
-    type: MediaType
-
-
 class OutputBase(AllHandlerBase):
     allow_cache = False
     name: str = None
