@@ -1,8 +1,9 @@
 from flask import Flask, abort, request
 
 from util import loader
-from util.types import GeneratorBase, OutputBase, MediaType
 from util.constants import PARAM_DELIMITER_GENERATOR_ARG, PARAM_DELIMITER_GENERATOR_GROUPS
+from util.types import GeneratorBase, MediaType, OutputBase
+from util.util import preprocess_string
 
 loader.patch_image_hashable()
 
@@ -47,8 +48,6 @@ def find_execute_generator(params: dict, output_type):
     grouped_args = group_input_params_once(params)
     generator_name, arg_names = get_generator_name_and_args(grouped_args)
     generator = find_generator(generator_name, output_type)
-    if list(sorted(arg_names)) != list(sorted(generator.input_params)):
-        raise ValueError()  # TODO error missing param
     for key in arg_names:
         param_key = f"{generator_name}{PARAM_DELIMITER_GENERATOR_ARG}{key}"
         value = grouped_args[param_key]
@@ -56,8 +55,9 @@ def find_execute_generator(params: dict, output_type):
             # TODO no, wrong
             arg_dict[key] = find_execute_generator(value, generator.input_params[key])
         else:
-            arg_dict[key] = value
+            arg_dict[key] = preprocess_string(value, generator.input_params[key])
     # arg_dict is fully resolved into non-nested key-value pairs
+    # TODO handle TypeError for missing args
     return generator.run(**arg_dict)
 
 
@@ -75,10 +75,12 @@ def group_input_params_once(params):
 
 def get_generator_name_and_args(grouped_args):
     # TODO error when no - in name
-    generator_candidates, arg_names = zip(*[
-        full_name.split(PARAM_DELIMITER_GENERATOR_ARG, 1)
-        for full_name in grouped_args
-    ])
+    generator_candidates, arg_names = zip(
+        *[
+            full_name.split(PARAM_DELIMITER_GENERATOR_ARG, 1)
+            for full_name in grouped_args
+        ]
+        )
     if len(list(set(generator_candidates))) != 1:
         raise ValueError()  # TODO too many args
     return generator_candidates[0], arg_names
@@ -94,4 +96,3 @@ def find_generator(name, output_type):
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
-

@@ -5,6 +5,7 @@ from enum import Enum, auto
 class MediaType(Enum):
     text = auto()
     image = auto()
+    integer = auto()
 
 
 class AllHandlerBase:
