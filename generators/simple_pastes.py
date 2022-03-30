@@ -1,3 +1,5 @@
+import math
+
 from generators.image_from_url import ImageFromServerAsset
 from generators.paste import BackgroundPaste
 from generators.transform import CropImageRatio, RotateImage
@@ -17,12 +19,13 @@ class GaybillGenerator(GeneratorBase):
         x2 = 855
         y1 = 45
         y2 = 260
+        # TODO maybe turn the crop+rotate chain into one generator
         return BackgroundPaste().run(
             image=RotateImage().run(
                 CropImageRatio().run(
                     image,
-                    x2 - x1,
-                    y2 - y1,
+                    math.cos(15) * (x2 - x1),
+                    math.cos(15) * (y2 - y1),
                     50
                 ),
                 15,
