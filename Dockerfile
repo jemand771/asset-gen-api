@@ -12,5 +12,4 @@ COPY util util
 COPY __init__.py .
 COPY main.py .
 
-# TODO gunicorn
-CMD ["python", "main.py"]
+CMD ["gunicorn", "main:app", "--bind", "0.0.0.0:80"]
