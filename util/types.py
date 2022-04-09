@@ -1,4 +1,5 @@
 import functools
+from dataclasses import dataclass
 from enum import Enum, auto
 
 from PIL import Image
@@ -50,3 +51,44 @@ class OutputBase(AllHandlerBase):
 
 class ConfigurationError(KeyError):
     pass
+
+
+@dataclass
+class Runner:
+    generator: type(GeneratorBase)
+    args: dict[str, any]
+
+    def __init__(self, generator, **kwargs):
+        self.generator = generator
+        self.args = kwargs
+
+    def run(self, input_params):
+        # TODO generator registry?
+        return self.generator().run(
+            **{
+                name: (
+                    value.run(input_params) if isinstance(value, Runner) else
+                    value.get(input_params) if isinstance(value, MappedParam) else
+                    value
+                )
+                for name, value in self.args.items()
+            }
+        )
+
+
+# TODO represent this as a generator?
+@dataclass
+class MappedParam:
+    name: str = None
+    func = None
+
+    def get(self, input_params):
+        target = input_params if self.name is None else input_params[self.name]
+        return target if self.func is None else self.func(target)
+
+
+class GeneratorChain(GeneratorBase):
+    chain: Runner
+
+    def run(self, *args, **kwargs):
+        return self.chain.run(kwargs)
