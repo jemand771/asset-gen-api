@@ -7,7 +7,7 @@ class RotateImage(GeneratorBase):
     input_params = {
         "image": MediaType.image,
         "angle": MediaType.integer,
-        "expand": MediaType.text  # TODO boolean mediatype
+        "expand": MediaType.boolean
     }
     name = "rotate"
     output_type = MediaType.image

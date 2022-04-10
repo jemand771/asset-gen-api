@@ -10,6 +10,7 @@ class MediaType(Enum):
     image = auto()
     integer = auto()
     box = auto()
+    boolean = auto()
 
 
 def copy_if_image(arg):
