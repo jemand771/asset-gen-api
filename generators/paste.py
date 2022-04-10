@@ -7,19 +7,14 @@ class ForegroundPaste(GeneratorBase):
     input_params = {
         "canvas": MediaType.image,
         "image": MediaType.image,
-        "x1": MediaType.integer,
-        "y1": MediaType.integer,
-        "x2": MediaType.integer,
-        "y2": MediaType.integer,
-        # TODO refactor 4 coords into box type
+        "box": MediaType.box,
     }
     name = "fgpaste"
     output_type = MediaType.image
 
-    def run(self, canvas: Image.Image, image: Image.Image, x1, y1, x2, y2):
-        target_box = (x1, y1, x2, y2)
-        image = image.resize(size=(x2 - x1, y2 - y1))
-        canvas.paste(image, target_box)
+    def run(self, canvas: Image.Image, image: Image.Image, box):
+        image = image.resize(size=box.dim)
+        canvas.paste(image, box.xyxy)
         return canvas
 
 
@@ -28,17 +23,13 @@ class BackgroundPaste(GeneratorBase):
         "canvas": MediaType.image,
         "image": MediaType.image,
         "mask": MediaType.image,
-        "x1": MediaType.integer,
-        "y1": MediaType.integer,
-        "x2": MediaType.integer,
-        "y2": MediaType.integer,
+        "box": MediaType.box,
     }
     name = "bgpaste"
     output_type = MediaType.image
 
-    def run(self, canvas: Image.Image, image, mask, x1, y1, x2, y2):
-        target_box = (x1, y1, x2, y2)
-        image = image.resize(size=(x2 - x1, y2 - y1))
-        mask = mask.crop(target_box).convert("L")
-        canvas.paste(image, target_box, mask)
+    def run(self, canvas: Image.Image, image, mask, box):
+        image = image.resize(size=box.dim)
+        mask = mask.crop(box.xyxy).convert("L")
+        canvas.paste(image, box.xyxy, mask)
         return canvas
