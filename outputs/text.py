@@ -1,10 +1,12 @@
 from util.types import MediaType, OutputBase
 
 
-# TODO TextOutputBase
-class BodyOutput(OutputBase):
-    name = "body"
+class TextOutputBase(OutputBase):
     type = MediaType.text
+
+
+class BodyOutput(TextOutputBase):
+    name = "body"
 
     def run(self, text):
         return text

@@ -5,10 +5,12 @@ import flask
 from util.types import MediaType, OutputBase
 
 
-# TODO ImageOutputBase
-class BodyImageOutput(OutputBase):
-    name = "body"
+class ImageOutputBase(OutputBase):
     type = MediaType.image
+
+
+class BodyImageOutput(ImageOutputBase):
+    name = "body"
 
     def run(self, img):
         img_io = io.BytesIO()
