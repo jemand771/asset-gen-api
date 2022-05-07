@@ -15,13 +15,13 @@ class SingleText(GeneratorBase):
     name = "text_single"
     output_type = MediaType.image
 
-    def get_max_font_size(self, text, font, max_width, max_height):
+    def get_max_font_size(self, font, max_width, max_height, **kwargs):
         # TODO use box class ?
         # TODO unclutter do-while loop
         if max_width is None and max_height is None:
             raise InvalidInputError("either max_width or max_height (or both) are needed")
         font_size = 1
-        text_size = self.estimate_text_size(font, font_size, text)
+        text_size = self.estimate_text_size(font, font_size, **kwargs)
         if (max_width is not None and text_size[0] > max_width) or \
                 (max_height is not None and text_size[1] > max_height):
             raise GeneratorInternalError("can't fit text")
@@ -30,17 +30,17 @@ class SingleText(GeneratorBase):
                     (max_height is not None and text_size[1] >= max_height):
                 return font_size - 1
             font_size += 1
-            text_size = self.estimate_text_size(font, font_size, text)
+            text_size = self.estimate_text_size(font, font_size, **kwargs)
 
     # TODO get the font data from somewhere
     # TODO make a better version of this with multiline support
     @staticmethod
-    def estimate_text_size(font_data, font_size, text):
-        font = ImageFont.truetype(font_data, font_size)
+    def estimate_text_size(font_path, font_size, **kwargs):
+        font = ImageFont.truetype(font_path, font_size)
         img = Image.new('RGB', (1, 1))
         draw = ImageDraw.Draw(img)
         # https://github.com/python-pillow/Pillow/issues/5816
-        box = Box.from_xyxy(*draw.multiline_textbbox((0, 0), text, font))
+        box = Box.from_xyxy(*draw.multiline_textbbox((0, 0), font=font, **kwargs))
         # return p2 instead of dim to account for "extra" space on the left that...
         # honestly, I don't know why this works
         return box.p2
@@ -48,8 +48,8 @@ class SingleText(GeneratorBase):
     def run(self, text, max_height=None, max_width=None, font_size=None):
         font = "C:/Windows/Fonts/calibri.ttf"  # TODO get this from somewhere
         if font_size is None:
-            font_size = self.get_max_font_size(text, font, max_height, max_width)
-        text_size = self.estimate_text_size(font, font_size, text)
+            font_size = self.get_max_font_size(font, max_height, max_width, text=text)
+        text_size = self.estimate_text_size(font, font_size, text=text)
         img = Image.new("RGBA", text_size, (0, 0, 0, 255))
         draw = ImageDraw.Draw(img)
         draw.text((0, 0), text, font=ImageFont.truetype(font, font_size), fill=(255, 0, 0))
@@ -63,6 +63,8 @@ class BetterText(SingleText):
         # this is more of a "wanted" / max size than an exact prediction
         "box": MediaType.box,
         "fill_color": MediaType.color,
+        "stroke_color": MediaType.color,
+        "stroke_width": MediaType.integer,
         "font": MediaType.font
     }
     name = "text_smart"
@@ -86,10 +88,23 @@ class BetterText(SingleText):
         raise GeneratorInternalError("could not wrap text")
 
     # noinspection PyMethodOverriding
-    def run(self, text, box, font, fill_color=(0, 0, 0)):
-        text = self.wrap_text(text, box.ratio, lambda t: self.estimate_text_size(font, 72, t))
-        font_size = self.get_max_font_size(text, font, *box.dim)
-        text_size = self.estimate_text_size(font, font_size, text)
+    def run(self, text, box, font, fill_color=(0, 0, 0), stroke_color=(0, 0, 0), stroke_width=1):
+        static_text_kwargs = dict(
+            stroke_width=stroke_width,
+            align="center"
+        )
+        text = self.wrap_text(
+            text,
+            box.ratio,
+            lambda t: self.estimate_text_size(
+                font_path=font,
+                font_size=72,
+                **static_text_kwargs,
+                text=t
+            )
+        )
+        font_size = self.get_max_font_size(font, *box.dim, text=text, **static_text_kwargs)
+        text_size = self.estimate_text_size(font, font_size, text=text, **static_text_kwargs)
         img = Image.new("RGBA", box.dim, (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
         target_x = box.width / 2 - text_size[0] / 2
@@ -99,6 +114,8 @@ class BetterText(SingleText):
             text,
             font=ImageFont.truetype(font, font_size),
             fill=fill_color,
+            stroke_fill=stroke_color,
+            stroke_width=stroke_width,
             align="center"
         )
         return img
