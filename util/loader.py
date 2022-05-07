@@ -17,7 +17,7 @@ class Registry:
     def load_classes(folder: Path, base_class):
         classes = []
         for file in folder.glob("**/*.py"):
-            spec = importlib.util.spec_from_file_location(file.name.rsplit(".", 1)[0], file)
+            spec = importlib.util.spec_from_file_location("generators." + file.name.rsplit(".", 1)[0], file)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             for _, obj in inspect.getmembers(module):
@@ -29,7 +29,7 @@ class Registry:
             try:
                 instances.append(class_())
             except Exception:
-                pass
+                print(f"failed to init {class_}")
         return instances
 
     def find_output(self, output_type, name_selector=None):
@@ -42,18 +42,17 @@ class Registry:
                 return output_candidate
         raise InvalidInputError(f"no suitable output found {output_type=} {name_selector=}")
 
+    def find_output_by_class(self, class_):
+        return self.find_output(class_.type, class_.name)
+
     def find_generator(self, name, output_type):
         for generator in self.generators:
             if generator.name == name and generator.output_type == output_type:
                 return generator
         raise InvalidInputError(f"no suitable generator found: '{name=}'")
 
-    def get_generator_instance(self, class_):
-        for instance in self.generators:
-            if type(instance) == class_:
-                return instance
-        raise InvalidInputError(f"no suitable generator found: {class_=}")
-
+    def find_generator_by_class(self, class_):
+        return self.find_generator(class_.name, class_.output_type)
 
 def init_registry():
     global registry

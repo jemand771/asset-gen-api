@@ -85,7 +85,7 @@ class Runner:
         self.args = kwargs
 
     def run(self, input_params):
-        return loader.registry.get_generator_instance(self.generator).run(
+        return loader.registry.find_generator_by_class(self.generator).run(
             **{
                 name: (
                     value.run(input_params) if isinstance(value, Runner) else

@@ -1,7 +1,7 @@
 from flask import Flask, abort, request
 
 from util import loader
-from util.constants import PARAM_DELIMITER_GENERATOR_ARG, PARAM_DELIMITER_GENERATOR_GROUPS
+from util.constants import PARAM_DELIMITER_GENERATOR_ARG, PARAM_DELIMITER_GENERATOR_GROUPS, PRESETS
 from util.types import GeneratorBase, InvalidInputError, MediaType, OutputBase
 from util.util import preprocess_string
 
@@ -76,6 +76,18 @@ def get_generator_name_and_args(grouped_args):
             + ",".join(grouped_args)
         )
     return generator_candidates[0], arg_names
+
+
+@app.get("/preset/<preset_name>/<path:input_str>")
+def preset_handler(preset_name, input_str):
+    try:
+        generator_class, output_class = PRESETS[preset_name]
+        generator = REGISTRY.find_generator_by_class(generator_class)
+        output = REGISTRY.find_output_by_class(output_class)
+    except KeyError:
+        return abort(404)
+    arg_name = list(generator.input_params)[0]
+    return output.run(generator.run(**{arg_name: input_str.replace("+", " ")}))
 
 
 if __name__ == '__main__':
