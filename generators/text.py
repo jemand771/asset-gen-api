@@ -37,7 +37,9 @@ class SingleText(GeneratorBase):
     @staticmethod
     def estimate_text_size(font_data, font_size, text):
         font = ImageFont.truetype(font_data, font_size)
-        return font.getsize_multiline(text)
+        img = Image.new('RGB', (1, 1))
+        draw = ImageDraw.Draw(img)
+        return draw.textsize(text, font)
 
     def run(self, text, max_height=None, max_width=None, font_size=None):
         font = "C:/Windows/Fonts/calibri.ttf"  # TODO get this from somewhere
