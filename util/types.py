@@ -170,5 +170,9 @@ class Box:
     def iratio(self):
         return self.height / self.width
 
+    @property
+    def whbox(self):
+        return Box.from_xy_wh((0, 0), self.dim)
+
     def __hash__(self):
         return self.xyxy.__hash__()
