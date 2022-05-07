@@ -40,4 +40,3 @@ class GaybillGenerator(GeneratorChain):
     )
 
     # TODO maybe turn the crop+rotate chain into one generator
-    # TODO internal instance registry

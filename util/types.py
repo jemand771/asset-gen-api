@@ -4,6 +4,8 @@ from enum import Enum, auto
 
 from PIL import Image
 
+from . import loader
+
 
 class MediaType(Enum):
     text = auto()
@@ -65,8 +67,7 @@ class Runner:
         self.args = kwargs
 
     def run(self, input_params):
-        # TODO generator registry?
-        return self.generator().run(
+        return loader.registry.get_generator_instance(self.generator).run(
             **{
                 name: (
                     value.run(input_params) if isinstance(value, Runner) else
