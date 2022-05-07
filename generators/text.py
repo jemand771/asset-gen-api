@@ -75,6 +75,8 @@ class BetterText(SingleText):
         # this reminds me fo the bug that would bootloop iphones trying to shorten RTL text, lol
         # calling it now, this will break.
         # https://www.youtube.com/watch?v=hJLMSllzoLA
+        if len(text) < 2:
+            return text
         best_text = text
         prev_ratio = None
         for max_line_len in reversed(range(1, len(text) + 1)):
@@ -89,6 +91,9 @@ class BetterText(SingleText):
 
     # noinspection PyMethodOverriding
     def run(self, text, box, font, fill_color=(0, 0, 0), stroke_color=(0, 0, 0), stroke_width=1):
+        img = Image.new("RGBA", box.dim, (0, 0, 0, 0))
+        if not text:
+            return img
         static_text_kwargs = dict(
             stroke_width=stroke_width,
             align="center"
@@ -105,7 +110,6 @@ class BetterText(SingleText):
         )
         font_size = self.get_max_font_size(font, *box.dim, text=text, **static_text_kwargs)
         text_size = self.estimate_text_size(font, font_size, text=text, **static_text_kwargs)
-        img = Image.new("RGBA", box.dim, (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
         target_x = box.width / 2 - text_size[0] / 2
         target_y = box.height / 2 - text_size[1] / 2

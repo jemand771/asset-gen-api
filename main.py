@@ -78,6 +78,11 @@ def get_generator_name_and_args(grouped_args):
     return generator_candidates[0], arg_names
 
 
+@app.get("/preset/<preset_name>", strict_slashes=False)
+def preset_handler_empty(preset_name):
+    return preset_handler(preset_name, "")
+
+
 @app.get("/preset/<preset_name>/<path:input_str>")
 def preset_handler(preset_name, input_str):
     try:
