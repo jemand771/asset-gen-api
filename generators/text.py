@@ -3,7 +3,7 @@ from PIL import Image, ImageDraw, ImageFont
 from util.types import GeneratorBase, GeneratorInternalError, InvalidInputError, MediaType
 
 
-class SmartText(GeneratorBase):
+class SingleText(GeneratorBase):
     input_params = {
         "text": MediaType.text,
         "font_size": MediaType.integer,
