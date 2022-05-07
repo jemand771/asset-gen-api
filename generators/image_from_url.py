@@ -3,7 +3,7 @@ from pathlib import Path
 import requests
 from PIL import Image
 
-from util.types import GeneratorBase, MediaType
+from util.types import GeneratorBase, InvalidInputError, MediaType
 
 
 class ImageFromUrl(GeneratorBase):
@@ -30,5 +30,5 @@ class ImageFromServerAsset(GeneratorBase):
     def run(self, name):
         path = Path("assets") / name
         if not path.is_file():
-            raise ValueError()  # TODO asset not found
+            raise InvalidInputError("no such asset found")
         return Image.open(path).convert("RGBA")

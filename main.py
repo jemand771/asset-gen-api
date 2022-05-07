@@ -2,7 +2,7 @@ from flask import Flask, abort, request
 
 from util import loader
 from util.constants import PARAM_DELIMITER_GENERATOR_ARG, PARAM_DELIMITER_GENERATOR_GROUPS
-from util.types import GeneratorBase, MediaType, OutputBase
+from util.types import GeneratorBase, InvalidInputError, MediaType, OutputBase
 from util.util import preprocess_string
 
 loader.patch_image_hashable()
@@ -14,12 +14,10 @@ app = Flask(__name__)
 
 @app.get("/<media_type>")
 def handle_query(media_type):
-    # TODO handle type error
     try:
         output_type = MediaType[media_type]
     except KeyError:
-        # return because PyCharm doesn't see/understand the exception
-        return abort(404, "unsupported media type")
+        raise InvalidInputError("unknown output media type")
     params = dict(request.args)
     # select a suitable output formatter
     output_handler = REGISTRY.find_output(output_type, name_selector=params.get("output"))
@@ -71,7 +69,12 @@ def get_generator_name_and_args(grouped_args):
         ]
     )
     if len(list(set(generator_candidates))) != 1:
-        raise ValueError()  # TODO too many args
+        raise InvalidInputError(
+            "multiple generator candidates:\n"
+            + ",".join(set(generator_candidates)) + "\n"
+            "all input arguments:\n"
+            + ",".join(grouped_args)
+        )
     return generator_candidates[0], arg_names
 
 

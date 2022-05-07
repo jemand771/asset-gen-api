@@ -1,7 +1,7 @@
 import importlib.util
 import inspect
 from pathlib import Path
-from util.types import GeneratorBase, OutputBase
+from util.types import GeneratorBase, InvalidInputError, OutputBase
 
 
 registry = None
@@ -40,19 +40,19 @@ class Registry:
                 continue
             if not name_selector or output_candidate.name == name_selector:
                 return output_candidate
-        raise ValueError("no suitable output found")  # TODO handle output handler not found
+        raise InvalidInputError(f"no suitable output found {output_type=} {name_selector=}")
 
     def find_generator(self, name, output_type):
         for generator in self.generators:
             if generator.name == name and generator.output_type == output_type:
                 return generator
-        raise ValueError(f"no suitable generator found: '{name}'")  # TODO error generator not found
+        raise InvalidInputError(f"no suitable generator found: '{name=}'")
 
     def get_generator_instance(self, class_):
         for instance in self.generators:
             if type(instance) == class_:
                 return instance
-        raise ValueError(f"no suitable generator found: {class_}")
+        raise InvalidInputError(f"no suitable generator found: {class_=}")
 
 
 def init_registry():

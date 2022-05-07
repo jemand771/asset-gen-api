@@ -7,6 +7,22 @@ from PIL import Image
 from . import loader
 
 
+class MissingArgumentError(KeyError):
+    pass
+
+
+class InvalidInputError(ValueError):
+    pass
+
+
+class GeneratorInternalError(RuntimeError):
+    pass
+
+
+class GeneratorNotFoundError(ValueError):
+    pass
+
+
 class MediaType(Enum):
     text = auto()
     image = auto()

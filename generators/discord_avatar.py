@@ -1,7 +1,7 @@
 import requests
 
 from util.constants import DISCORD_API_URL, DISCORD_CDN_URL
-from util.types import GeneratorBase, MediaType
+from util.types import GeneratorBase, GeneratorInternalError, InvalidInputError, MediaType
 from util.util import get_env
 
 from generators.image_from_url import ImageFromUrl
@@ -26,9 +26,12 @@ class DiscordAvatar(ImageFromUrl):
                 "Authorization": f"Bot {self.discord_token}"
             }
         )
-        assert r.status_code == 200  # TODO error handling
+        if r.status_code == 404:
+            raise InvalidInputError("user not found")
+        if r.status_code != 200:
+            raise GeneratorInternalError("unknown error while talking to discord")
         avatar_hash: str = r.json().get("avatar")
         if avatar_hash.startswith("a_"):
-            raise ValueError("animated avatars aren't currently supported")  # TODO pass exception on
+            raise InvalidInputError("animated avatars aren't currently supported")
         cdn_url = f"{DISCORD_CDN_URL}/avatars/{id}/{avatar_hash}.png?size=1024"
         return super().run(cdn_url)
