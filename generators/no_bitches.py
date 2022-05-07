@@ -2,6 +2,7 @@ from generators.image_from_url import ImageFromServerAsset
 from generators.paste import ForegroundPaste
 from generators.text import BetterText
 from util.types import Box, GeneratorChain, MappedParam, MediaType, Runner
+from util.util import preprocess_string
 
 
 class NoBitchesGenerator(GeneratorChain):
@@ -22,7 +23,7 @@ class NoBitchesGenerator(GeneratorChain):
         image=Runner(
             BetterText,
             box=box.whbox,
-            font="impact",
+            font=preprocess_string("impact", MediaType.font),
             fill_color=(255, 255, 255),
             stroke_color=(0, 0, 0, 255),
             stroke_width=5,
