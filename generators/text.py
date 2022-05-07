@@ -39,7 +39,11 @@ class SingleText(GeneratorBase):
         font = ImageFont.truetype(font_data, font_size)
         img = Image.new('RGB', (1, 1))
         draw = ImageDraw.Draw(img)
-        return draw.textsize(text, font)
+        # https://github.com/python-pillow/Pillow/issues/5816
+        box = Box.from_xyxy(*draw.multiline_textbbox((0, 0), text, font))
+        # return p2 instead of dim to account for "extra" space on the left that...
+        # honestly, I don't know why this works
+        return box.p2
 
     def run(self, text, max_height=None, max_width=None, font_size=None):
         font = "C:/Windows/Fonts/calibri.ttf"  # TODO get this from somewhere
