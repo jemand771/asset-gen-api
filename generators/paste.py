@@ -14,7 +14,7 @@ class ForegroundPaste(GeneratorBase):
 
     def run(self, canvas: Image.Image, image: Image.Image, box):
         image = image.resize(size=box.dim)
-        canvas.paste(image, box.xyxy)
+        canvas.paste(image, box.xyxy, image)
         return canvas
 
 
