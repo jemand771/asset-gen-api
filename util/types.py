@@ -29,6 +29,8 @@ class MediaType(Enum):
     integer = auto()
     box = auto()
     boolean = auto()
+    color = auto()
+    font = auto()
 
 
 def copy_if_image(arg):
@@ -159,6 +161,14 @@ class Box:
     @property
     def xyxy(self):
         return *self.p1, *self.p2
+
+    @property
+    def ratio(self):
+        return self.width / self.height
+
+    @property
+    def iratio(self):
+        return self.height / self.width
 
     def __hash__(self):
         return self.xyxy.__hash__()
