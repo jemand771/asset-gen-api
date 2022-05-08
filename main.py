@@ -15,6 +15,11 @@ app = Flask(__name__)
 metrics.route(app)
 
 
+@app.get("/favicon.ico")
+def favicon():
+    abort(404)
+
+
 @app.get("/<media_type>")
 def handle_query(media_type):
     try:
