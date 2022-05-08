@@ -100,7 +100,7 @@ def preset_handler(preset_name, input_str):
     except KeyError:
         return abort(404)
     arg_name = list(generator.input_params)[0]
-    return output.run(generator.run(**{arg_name: input_str.replace("+", " ")}))
+    return output.run(generator.run(**{arg_name: input_str}))
 
 
 if __name__ == '__main__':
