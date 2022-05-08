@@ -5,6 +5,7 @@ from enum import Enum, auto
 from PIL import Image
 
 from . import loader
+from . import metrics
 
 
 class MissingArgumentError(KeyError):
@@ -49,10 +50,12 @@ def image_copier(func):
 
 class AllHandlerBase:
     allow_cache = True
+    name: str = None
 
     def __init__(self):
         if self.allow_cache:
             self.run = functools.cache(self.run)
+            metrics.add_run_cache_stats(self.run, self.name)
         self.run = image_copier(self.run)
 
     def run(self, *args, **kwargs):
@@ -61,13 +64,11 @@ class AllHandlerBase:
 
 class GeneratorBase(AllHandlerBase):
     input_params: dict
-    name: str = None
     output_type: MediaType
 
 
 class OutputBase(AllHandlerBase):
     allow_cache = False
-    name: str = None
     type: MediaType
 
 
@@ -75,6 +76,7 @@ class ConfigurationError(KeyError):
     pass
 
 
+# TODO can this be cached?
 @dataclass
 class Runner:
     generator: type(GeneratorBase)

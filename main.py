@@ -1,15 +1,18 @@
 from flask import Flask, abort, request
 
-from util import loader
+from util import loader, metrics
 from util.constants import PARAM_DELIMITER_GENERATOR_ARG, PARAM_DELIMITER_GENERATOR_GROUPS, PRESETS
-from util.types import GeneratorBase, InvalidInputError, MediaType, OutputBase
+from util.types import InvalidInputError, MediaType
 from util.util import preprocess_string
 
 loader.patch_image_hashable()
 loader.init_registry()
 REGISTRY = loader.registry
+metrics.init()
 
 app = Flask(__name__)
+
+metrics.route(app)
 
 
 @app.get("/<media_type>")
@@ -72,7 +75,7 @@ def get_generator_name_and_args(grouped_args):
         raise InvalidInputError(
             "multiple generator candidates:\n"
             + ",".join(set(generator_candidates)) + "\n"
-            "all input arguments:\n"
+                                                    "all input arguments:\n"
             + ",".join(grouped_args)
         )
     return generator_candidates[0], arg_names
