@@ -1,8 +1,8 @@
 import importlib.util
 import inspect
 from pathlib import Path
-from util.types import GeneratorBase, InvalidInputError, OutputBase
 
+from util.types import GeneratorBase, GeneratorChain, InvalidInputError, OutputBase
 
 registry = None
 
@@ -10,18 +10,21 @@ registry = None
 class Registry:
 
     def __init__(self):
-        self.generators = self.load_classes(Path("generators"), GeneratorBase)
+        self.generators = self.load_classes(Path("generators"), GeneratorBase, [GeneratorChain])
         self.outputs = self.load_classes(Path("outputs"), OutputBase)
 
     @staticmethod
-    def load_classes(folder: Path, base_class):
+    def load_classes(folder: Path, base_class, excluded_classes=None):
+        if excluded_classes is None:
+            excluded_classes = []
+        excluded_classes.append(base_class)
         classes = []
         for file in folder.glob("**/*.py"):
             spec = importlib.util.spec_from_file_location("generators." + file.name.rsplit(".", 1)[0], file)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             for _, obj in inspect.getmembers(module):
-                if inspect.isclass(obj) and issubclass(obj, base_class) and obj != base_class:
+                if inspect.isclass(obj) and issubclass(obj, base_class) and obj not in excluded_classes:
                     classes.append(obj)
         instances = []
         for class_ in classes:
@@ -54,6 +57,7 @@ class Registry:
     def find_generator_by_class(self, class_):
         return self.find_generator(class_.name, class_.type)
 
+
 def init_registry():
     global registry
     registry = Registry()
@@ -66,5 +70,6 @@ def patch_image_hashable():
     def __hash__(self):
         import hashlib
         return int(hashlib.md5(self.tobytes()).hexdigest(), 16)
+
     PngImageFile.__hash__ = __hash__
     Image.__hash__ = __hash__
