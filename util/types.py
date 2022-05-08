@@ -56,7 +56,7 @@ class AllHandlerBase:
     def __init__(self):
         if self.allow_cache:
             self.run = functools.cache(self.run)
-            metrics.add_run_cache_stats(self.run, self.name)
+            metrics.add_run_cache_stats(self.name, self.type, self.run.cache_info)
         self.run = image_copier(self.run)
 
     def run(self, *args, **kwargs):
