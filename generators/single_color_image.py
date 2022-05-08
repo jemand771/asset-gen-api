@@ -10,7 +10,7 @@ class SingleColorImage(GeneratorBase):
         "dim": MediaType.integer
     }
     name = "color_square"
-    output_type = MediaType.image
+    type = MediaType.image
 
     def run(self, color, dim=400):
         color = parse_color(color)

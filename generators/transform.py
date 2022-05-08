@@ -10,7 +10,7 @@ class RotateImage(GeneratorBase):
         "expand": MediaType.boolean
     }
     name = "rotate"
-    output_type = MediaType.image
+    type = MediaType.image
 
     def run(self, image, angle, expand=False):
         return image.rotate(angle, expand=expand)
@@ -24,7 +24,7 @@ class CropImageRatio(GeneratorBase):
         "pos": MediaType.integer
     }
     name = "rcrop"
-    output_type = MediaType.image
+    type = MediaType.image
 
     @staticmethod
     def _size_ratio(image):

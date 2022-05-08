@@ -11,7 +11,7 @@ class GaybillGenerator(GeneratorChain):
         "image": MediaType.image
     }
     name = "gaybill"
-    output_type = MediaType.image
+    type = MediaType.image
 
     box = Box(x1=575, x2=855, y1=45, y2=260)
     chain = Runner(

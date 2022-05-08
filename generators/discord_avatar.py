@@ -12,7 +12,7 @@ class DiscordAvatar(ImageFromUrl):
         "id": MediaType.text
     }
     name = "discord"
-    output_type = MediaType.image
+    type = MediaType.image
 
     def __init__(self):
         super().__init__()

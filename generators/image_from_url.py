@@ -11,7 +11,7 @@ class ImageFromUrl(GeneratorBase):
         "url": MediaType.text
     }
     name = "fromurl"
-    output_type = MediaType.image
+    type = MediaType.image
 
     def run(self, url):
         r = requests.get(url, stream=True)
@@ -25,7 +25,7 @@ class ImageFromServerAsset(GeneratorBase):
         "name": MediaType.text
     }
     name = "fromasset"
-    output_type = MediaType.image
+    type = MediaType.image
 
     def run(self, name):
         path = Path("assets") / name

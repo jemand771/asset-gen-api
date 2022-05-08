@@ -6,7 +6,7 @@ class TextEcho(GeneratorBase):
     input_params = {
         "text": MediaType.text
     }
-    output_type = MediaType.text
+    type = MediaType.text
     name = "echo"
 
     def run(self, text):
@@ -17,7 +17,7 @@ class ImageEcho(GeneratorBase):
     input_params = {
         "image": MediaType.image
     }
-    output_type = MediaType.image
+    type = MediaType.image
     name = "echo"
 
     def run(self, image):

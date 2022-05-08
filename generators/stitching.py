@@ -10,7 +10,7 @@ class StitchImages(GeneratorBase):
         "vertical": MediaType.boolean,
     }
     name = "stitch"
-    output_type = MediaType.image
+    type = MediaType.image
 
     def run(self, image1, image2, vertical=False):
         # TODO scale

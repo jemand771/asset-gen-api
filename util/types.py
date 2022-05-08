@@ -51,6 +51,7 @@ def image_copier(func):
 class AllHandlerBase:
     allow_cache = True
     name: str = None
+    type: MediaType
 
     def __init__(self):
         if self.allow_cache:
@@ -64,12 +65,10 @@ class AllHandlerBase:
 
 class GeneratorBase(AllHandlerBase):
     input_params: dict
-    output_type: MediaType
 
 
 class OutputBase(AllHandlerBase):
     allow_cache = False
-    type: MediaType
 
 
 class ConfigurationError(KeyError):

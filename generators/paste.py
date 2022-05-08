@@ -10,7 +10,7 @@ class ForegroundPaste(GeneratorBase):
         "box": MediaType.box,
     }
     name = "fgpaste"
-    output_type = MediaType.image
+    type = MediaType.image
 
     def run(self, canvas: Image.Image, image: Image.Image, box):
         image = image.resize(size=box.dim)
@@ -26,7 +26,7 @@ class BackgroundPaste(GeneratorBase):
         "box": MediaType.box,
     }
     name = "bgpaste"
-    output_type = MediaType.image
+    type = MediaType.image
 
     def run(self, canvas: Image.Image, image, mask, box):
         image = image.resize(size=box.dim)

@@ -47,12 +47,12 @@ class Registry:
 
     def find_generator(self, name, output_type):
         for generator in self.generators:
-            if generator.name == name and generator.output_type == output_type:
+            if generator.name == name and generator.type == output_type:
                 return generator
         raise InvalidInputError(f"no suitable generator found: '{name=}'")
 
     def find_generator_by_class(self, class_):
-        return self.find_generator(class_.name, class_.output_type)
+        return self.find_generator(class_.name, class_.type)
 
 def init_registry():
     global registry

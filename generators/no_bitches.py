@@ -10,7 +10,7 @@ class NoBitchesGenerator(GeneratorChain):
         "text": MediaType.text
     }
     name = "no_bitches"
-    output_type = MediaType.image
+    type = MediaType.image
 
     box = Box(x1=20, x2=519, y1=20, y2=120)
     chain = Runner(

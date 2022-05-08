@@ -13,7 +13,7 @@ class SingleText(GeneratorBase):
         "max_width": MediaType.integer,
     }
     name = "text_single"
-    output_type = MediaType.image
+    type = MediaType.image
 
     def get_max_font_size(self, font, max_width, max_height, **kwargs):
         # TODO use box class ?
@@ -68,7 +68,7 @@ class BetterText(SingleText):
         "font": MediaType.font
     }
     name = "text_smart"
-    output_type = MediaType.image
+    type = MediaType.image
 
     @staticmethod
     def wrap_text(text, ratio, estimator):
