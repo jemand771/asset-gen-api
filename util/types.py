@@ -32,6 +32,7 @@ class MediaType(Enum):
     boolean = auto()
     color = auto()
     font = auto()
+    bytes = auto()
 
 
 def copy_if_image(arg):

@@ -1,7 +1,10 @@
+import copy
 import io
 
 import flask
 
+from generators.output_encode import PNGEncoder
+from util import loader
 from util.types import GeneratorInternalError, MediaType, OutputBase
 
 
@@ -15,7 +18,5 @@ class BodyImageOutput(ImageOutputBase):
     def run(self, img):
         if img is None:
             raise GeneratorInternalError("the generator returned None")
-        img_io = io.BytesIO()
-        img.save(img_io, "PNG")
-        img_io.seek(0)
-        return flask.send_file(img_io, mimetype='image/png')
+        img_bytes = copy.deepcopy(loader.registry.find_generator_by_class(PNGEncoder)).run(image=img)
+        return flask.send_file(io.BytesIO(img_bytes), mimetype='image/png')
