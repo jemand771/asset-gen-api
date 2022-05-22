@@ -12,4 +12,4 @@ COPY util util
 COPY __init__.py .
 COPY main.py .
 
-CMD ["gunicorn", "main:app", "--bind", "0.0.0.0:80"]
+CMD ["gunicorn", "main:app", "--bind", "0.0.0.0:80", "--workers", "1", "--threads", "4"]
