@@ -1,5 +1,7 @@
 flask
 gunicorn
+numpy
 pillow
+pilmoji
 prometheus_client
 requests
