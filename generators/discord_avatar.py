@@ -1,25 +1,21 @@
 import requests
-
-from util.constants import DISCORD_API_URL, DISCORD_CDN_URL
-from util.types import GeneratorBase, GeneratorInternalError, InvalidInputError, MediaType
-from util.util import get_env
+from PIL.Image import Image
 
 from generators.image_from_url import ImageFromUrl
+from util.constants import DISCORD_API_URL, DISCORD_CDN_URL
+from util.types import GeneratorInternalError, InvalidInputError
+from util.util import get_env
 
 
 class DiscordAvatar(ImageFromUrl):
-    input_params = {
-        "id": MediaType.text
-    }
-    name = "discord"
-    type = MediaType.image
+    type = "discord"
 
     def __init__(self):
         super().__init__()
         self.discord_token = get_env("DISCORD_TOKEN")
 
     # noinspection PyShadowingBuiltins
-    def run(self, id):
+    def run(self, id: str) -> Image:
         r = requests.get(
             f"{DISCORD_API_URL}/users/{id}",
             headers={

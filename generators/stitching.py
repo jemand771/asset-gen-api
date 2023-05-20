@@ -1,18 +1,12 @@
 from PIL import Image
 
-from util.types import GeneratorBase, MediaType
+from util.types import GeneratorBase
 
 
 class StitchImages(GeneratorBase):
-    input_params = {
-        "image1": MediaType.image,
-        "image2": MediaType.image,
-        "vertical": MediaType.boolean,
-    }
-    name = "stitch"
-    type = MediaType.image
+    type = "stitch"
 
-    def run(self, image1, image2, vertical=False):
+    def run(self, image1: Image.Image, image2: Image.Image, vertical: bool = False) -> Image.Image:
         # TODO scale
         x1, y1 = image1.size
         x2, y2 = image2.size

@@ -5,20 +5,15 @@ import pilmoji
 from PIL import Image, ImageFont
 from pilmoji import Pilmoji
 
-from util.types import GeneratorBase, InvalidInputError, MediaType
+from util.types import GeneratorBase, InvalidInputError
 
 
 class RenderEmoji(GeneratorBase):
-    input_params = {
-        "emoji": MediaType.text,
-        "size": MediaType.integer
-    }
-    name = "render_emoji"
-    type = MediaType.image
+    type = "render_emoji"
 
     _regex = re.compile(f"^{pilmoji.EMOJI_REGEX.pattern}$")
 
-    def run(self, emoji, size=400):
+    def run(self, emoji: str, size: int = 400) -> Image.Image:
         if not self._regex.match(emoji):
             raise InvalidInputError("no single emoji was provided")
         img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
@@ -29,13 +24,9 @@ class RenderEmoji(GeneratorBase):
 
 
 class UnwrapEmoji(GeneratorBase):
-    input_params = {
-        "image": MediaType.image
-    }
-    name = "unwrap_emoji"
-    type = MediaType.image
+    type = "unwrap_emoji"
 
-    def run(self, image):
+    def run(self, image: Image.Image) -> Image.Image:
         data = np.array(image.convert("RGBA"))
         alpha = data.T[3]
         trans_pixels = alpha < 255

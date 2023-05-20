@@ -1,15 +1,10 @@
 import functools
 from dataclasses import dataclass
-from enum import Enum, auto
+from typing import Any
 
 from PIL import Image
 
-from . import loader
 from . import metrics
-
-
-class MissingArgumentError(KeyError):
-    pass
 
 
 class InvalidInputError(ValueError):
@@ -18,21 +13,6 @@ class InvalidInputError(ValueError):
 
 class GeneratorInternalError(RuntimeError):
     pass
-
-
-class GeneratorNotFoundError(ValueError):
-    pass
-
-
-class MediaType(Enum):
-    text = auto()
-    image = auto()
-    integer = auto()
-    box = auto()
-    boolean = auto()
-    color = auto()
-    font = auto()
-    bytes = auto()
 
 
 def copy_if_image(arg):
@@ -49,72 +29,22 @@ def image_copier(func):
     return wrapper
 
 
-class AllHandlerBase:
+class GeneratorBase:
     allow_cache = True
-    name: str = None
-    type: MediaType
+    type: str
 
     def __init__(self):
         if self.allow_cache:
             self.run = functools.cache(self.run)
-            metrics.add_run_cache_stats(self.name, self.type, self.run.cache_info)
+            metrics.add_run_cache_stats(self.type, self.run.cache_info)
         self.run = image_copier(self.run)
 
-    def run(self, *args, **kwargs):
+    def run(self, *args: list[Any], **kwargs: dict[str, Any]) -> Any:
         pass
-
-
-class GeneratorBase(AllHandlerBase):
-    input_params: dict
-
-
-class OutputBase(AllHandlerBase):
-    allow_cache = False
 
 
 class ConfigurationError(KeyError):
     pass
-
-
-# TODO can this be cached?
-@dataclass
-class Runner:
-    generator: type(GeneratorBase)
-    args: dict[str, any]
-
-    def __init__(self, generator, **kwargs):
-        self.generator = generator
-        self.args = kwargs
-
-    def run(self, input_params):
-        return loader.registry.find_generator_by_class(self.generator).run(
-            **{
-                name: (
-                    value.run(input_params) if isinstance(value, Runner) else
-                    value.get(input_params) if isinstance(value, MappedParam) else
-                    value
-                )
-                for name, value in self.args.items()
-            }
-        )
-
-
-# TODO represent this as a generator?
-@dataclass
-class MappedParam:
-    name: str = None
-    func = None
-
-    def get(self, input_params):
-        target = input_params if self.name is None else input_params[self.name]
-        return target if self.func is None else self.func(target)
-
-
-class GeneratorChain(GeneratorBase):
-    chain: Runner
-
-    def run(self, *args, **kwargs):
-        return self.chain.run(kwargs)
 
 
 @dataclass

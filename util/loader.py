@@ -2,65 +2,56 @@ import importlib.util
 import inspect
 from pathlib import Path
 
-from util.types import GeneratorBase, GeneratorChain, InvalidInputError, OutputBase
-
-registry = None
+from util.graph import Graph
+from util.types import GeneratorBase
 
 
 class Registry:
-
     def __init__(self):
-        self.generators = self.load_classes(Path("generators"), GeneratorBase, [GeneratorChain])
-        self.outputs = self.load_classes(Path("outputs"), OutputBase)
+        self.generators = {}
+        self.presets = {}
+
+    def load_generators(self):
+        self.generators = self.load_classes(Path("generators"), "generators", GeneratorBase)
+
+    def load_presets(self):
+        self.presets = self.load_classes(Path("presets"), "presets", Graph)
 
     @staticmethod
-    def load_classes(folder: Path, base_class, excluded_classes=None):
+    def load_classes(folder: Path, module_prefix, base_class, excluded_classes=None):
         if excluded_classes is None:
             excluded_classes = []
         excluded_classes.append(base_class)
         classes = []
         for file in folder.glob("**/*.py"):
-            spec = importlib.util.spec_from_file_location("generators." + file.name.rsplit(".", 1)[0], file)
+            # TODO clean up module name calculation (support subdirs)
+            spec = importlib.util.spec_from_file_location(module_prefix + "." + file.stem, file)
             module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
+            try:
+                spec.loader.exec_module(module)
+            except ImportError:
+                print("warning: failed to immport", file)
+                continue
             for _, obj in inspect.getmembers(module):
                 if inspect.isclass(obj) and issubclass(obj, base_class) and obj not in excluded_classes:
                     classes.append(obj)
-        instances = []
+        instances = {}
         for class_ in classes:
             # noinspection PyBroadException
             try:
-                instances.append(class_())
+                instances[class_.type] = class_()
             except Exception:
                 print(f"failed to init {class_}")
         return instances
 
-    def find_output(self, output_type, name_selector=None):
-        for output_candidate in self.outputs:
-            if output_candidate.name is None:
-                continue
-            if output_candidate.type != output_type:
-                continue
-            if not name_selector or output_candidate.name == name_selector:
-                return output_candidate
-        raise InvalidInputError(f"no suitable output found {output_type=} {name_selector=}")
-
-    def find_output_by_class(self, class_):
-        return self.find_output(class_.type, class_.name)
-
-    def find_generator(self, name, output_type):
-        for generator in self.generators:
-            if generator.name == name and generator.type == output_type:
-                return generator
-        raise InvalidInputError(f"no suitable generator found: '{name=}'")
-
-    def find_generator_by_class(self, class_):
-        return self.find_generator(class_.name, class_.type)
+    def find_generator(self, name):
+        return self.generators[name]
 
 
-def init_registry():
-    global registry
-    registry = Registry()
+registry = Registry()
+# this runs on import which is fine because... well, we _are_ importing stuff
+registry.load_generators()
+registry.load_presets()
 
 
 def patch_image_hashable():

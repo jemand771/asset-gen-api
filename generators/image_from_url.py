@@ -3,17 +3,13 @@ from pathlib import Path
 import requests
 from PIL import Image
 
-from util.types import GeneratorBase, InvalidInputError, MediaType
+from util.types import GeneratorBase, InvalidInputError
 
 
 class ImageFromUrl(GeneratorBase):
-    input_params = {
-        "url": MediaType.text
-    }
-    name = "fromurl"
-    type = MediaType.image
+    type = "fromurl"
 
-    def run(self, url):
+    def run(self, url: str) -> Image.Image:
         r = requests.get(url, stream=True)
         img = Image.open(r.raw)
         return img
@@ -21,13 +17,9 @@ class ImageFromUrl(GeneratorBase):
 
 class ImageFromServerAsset(GeneratorBase):
     # TODO host via own path
-    input_params = {
-        "name": MediaType.text
-    }
-    name = "fromasset"
-    type = MediaType.image
+    type = "fromasset"
 
-    def run(self, name):
+    def run(self, name: str) -> Image.Image:
         path = Path("assets") / name
         if not path.is_file():
             raise InvalidInputError("no such asset found")

@@ -39,4 +39,5 @@ class GaybillGenerator(GeneratorChain):
         box=box
     )
 
+    # TODO currently broken, needs some more math-related base generators
     # TODO maybe turn the crop+rotate chain into one generator

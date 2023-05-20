@@ -1,36 +1,23 @@
 from PIL import Image
 
-from util.types import GeneratorBase, MediaType
+from util.types import GeneratorBase
 
 
 class RotateImage(GeneratorBase):
-    input_params = {
-        "image": MediaType.image,
-        "angle": MediaType.integer,
-        "expand": MediaType.boolean
-    }
-    name = "rotate"
-    type = MediaType.image
+    type = "rotate"
 
-    def run(self, image, angle, expand=False):
+    def run(self, image: Image.Image, angle: float, expand: bool = False) -> Image.Image:
         return image.rotate(angle, expand=expand)
 
 
 class CropImageRatio(GeneratorBase):
-    input_params = {
-        "image": MediaType.image,
-        "x": MediaType.integer,
-        "y": MediaType.integer,
-        "pos": MediaType.integer
-    }
-    name = "rcrop"
-    type = MediaType.image
+    type = "rcrop"
 
     @staticmethod
     def _size_ratio(image):
         return image.size[0] / image.size[1]
 
-    def run(self, image: Image.Image, x, y, pos=50):
+    def run(self, image: Image.Image, x: int, y: int, pos: int = 50) -> Image.Image:
         source_ratio = self._size_ratio(image)
         target_ratio = x / y
         if source_ratio == target_ratio:

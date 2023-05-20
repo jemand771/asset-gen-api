@@ -7,7 +7,7 @@ FAMILIES = {}
 
 
 def make_per_generator_gauge(name, description):
-    return Gauge(name, description, ["generator_name", "generator_type"])
+    return Gauge(name, description, ["generator_type"])
 
 
 CACHE_GAUGES = [
@@ -40,10 +40,10 @@ def route(app):
         app.wsgi_app, {
             "/metrics": make_wsgi_app(METRICS_REGISTRY)
         }
-        )
+    )
 
 
-def add_run_cache_stats(name, type_, cache_info):
+def add_run_cache_stats(type_, cache_info):
     for i, g in enumerate(CACHE_GAUGES):
         # haha, scope go brr
         def make_set_func(info_idx):
@@ -54,6 +54,5 @@ def add_run_cache_stats(name, type_, cache_info):
             return set_func
 
         g.labels(
-            generator_name=name,
-            generator_type=type_.name
+            generator_type=type_
         ).set_function(make_set_func(i))

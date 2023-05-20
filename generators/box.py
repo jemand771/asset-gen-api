@@ -1,13 +1,8 @@
-from util.types import Box, GeneratorBase, MediaType
+from util.types import Box, GeneratorBase
 
 
 class ZeroBoundBox(GeneratorBase):
-    input_params = {
-        "width": MediaType.integer,
-        "height": MediaType.integer,
-    }
-    name = "box_wh"
-    type = MediaType.box
+    type = "box_wh"
 
-    def run(self, width, height):
+    def run(self, width: int, height: int) -> Box:
         return Box.from_xywh(0, 0, width, height)

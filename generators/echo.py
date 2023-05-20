@@ -1,24 +1,17 @@
-from util.types import GeneratorBase, MediaType
+from PIL.Image import Image
+
+from util.types import GeneratorBase
 
 
 class TextEcho(GeneratorBase):
+    type = "echo.text"
 
-    input_params = {
-        "text": MediaType.text
-    }
-    type = MediaType.text
-    name = "echo"
-
-    def run(self, text):
+    def run(self, text: str) -> str:
         return text
 
 
 class ImageEcho(GeneratorBase):
-    input_params = {
-        "image": MediaType.image
-    }
-    type = MediaType.image
-    name = "echo"
+    type = "echo.image"
 
-    def run(self, image):
+    def run(self, image: Image) -> Image:
         return image

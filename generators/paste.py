@@ -1,34 +1,21 @@
-from PIL import Image
+from PIL.Image import Image
 
-from util.types import GeneratorBase, MediaType
+from util.types import Box, GeneratorBase
 
 
 class ForegroundPaste(GeneratorBase):
-    input_params = {
-        "canvas": MediaType.image,
-        "image": MediaType.image,
-        "box": MediaType.box,
-    }
-    name = "fgpaste"
-    type = MediaType.image
+    type = "fgpaste"
 
-    def run(self, canvas: Image.Image, image: Image.Image, box):
+    def run(self, canvas: Image, image: Image, box: Box) -> Image:
         image = image.resize(size=box.dim)
         canvas.paste(image, box.xyxy, image)
         return canvas
 
 
 class BackgroundPaste(GeneratorBase):
-    input_params = {
-        "canvas": MediaType.image,
-        "image": MediaType.image,
-        "mask": MediaType.image,
-        "box": MediaType.box,
-    }
-    name = "bgpaste"
-    type = MediaType.image
+    type = "bgpaste"
 
-    def run(self, canvas: Image.Image, image, mask, box):
+    def run(self, canvas: Image, image: Image, mask: Image, box: Box) -> Image:
         image = image.resize(size=box.dim)
         mask = mask.crop(box.xyxy).convert("L")
         canvas.paste(image, box.xyxy, mask)

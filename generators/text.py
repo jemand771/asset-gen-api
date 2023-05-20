@@ -2,18 +2,13 @@ import textwrap
 
 from PIL import Image, ImageDraw, ImageFont
 
-from util.types import Box, GeneratorBase, GeneratorInternalError, InvalidInputError, MediaType
+from util.types import Box, GeneratorBase, GeneratorInternalError, InvalidInputError
 
 
 class SingleText(GeneratorBase):
-    input_params = {
-        "text": MediaType.text,
-        "font_size": MediaType.integer,
-        "max_height": MediaType.integer,
-        "max_width": MediaType.integer,
-    }
-    name = "text_single"
-    type = MediaType.image
+    type = "text_single"
+
+    # TODO abandoned class (for now)
 
     def get_max_font_size(self, font, max_width, max_height, **kwargs):
         # TODO use box class ?
@@ -23,11 +18,11 @@ class SingleText(GeneratorBase):
         font_size = 1
         text_size = self.estimate_text_size(font, font_size, **kwargs)
         if (max_width is not None and text_size[0] > max_width) or \
-                (max_height is not None and text_size[1] > max_height):
+            (max_height is not None and text_size[1] > max_height):
             raise GeneratorInternalError("can't fit text")
         while True:
             if (max_width is not None and text_size[0] >= max_width) or \
-                    (max_height is not None and text_size[1] >= max_height):
+                (max_height is not None and text_size[1] >= max_height):
                 return font_size - 1
             font_size += 1
             text_size = self.estimate_text_size(font, font_size, **kwargs)
@@ -45,7 +40,7 @@ class SingleText(GeneratorBase):
         # honestly, I don't know why this works
         return box.p2
 
-    def run(self, text, max_height=None, max_width=None, font_size=None):
+    def run(self, text: str, max_height: int = None, max_width: int = None, font_size: int = None) -> Image.Image:
         font = "C:/Windows/Fonts/calibri.ttf"  # TODO get this from somewhere
         if font_size is None:
             font_size = self.get_max_font_size(font, max_height, max_width, text=text)
@@ -57,18 +52,7 @@ class SingleText(GeneratorBase):
 
 
 class BetterText(SingleText):
-    input_params = {
-        "text": MediaType.text,
-        "font_size": MediaType.integer,
-        # this is more of a "wanted" / max size than an exact prediction
-        "box": MediaType.box,
-        "fill_color": MediaType.color,
-        "stroke_color": MediaType.color,
-        "stroke_width": MediaType.integer,
-        "font": MediaType.font
-    }
-    name = "text_smart"
-    type = MediaType.image
+    type = "text_smart"
 
     @staticmethod
     def wrap_text(text, ratio, estimator):
@@ -89,8 +73,18 @@ class BetterText(SingleText):
             best_text = wrapped_text
         raise GeneratorInternalError("could not wrap text")
 
+    # TODO font data type
+    # TODO color data type
     # noinspection PyMethodOverriding
-    def run(self, text, box, font, fill_color=(0, 0, 0), stroke_color=(0, 0, 0), stroke_width=1):
+    def run(
+        self,
+        text: str,
+        box: Box,
+        font: str,
+        fill_color: tuple = (0, 0, 0),
+        stroke_color: tuple = (0, 0, 0),
+        stroke_width: int = 1
+    ):
         img = Image.new("RGBA", box.dim, (0, 0, 0, 0))
         if not text:
             return img
